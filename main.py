@@ -1,10 +1,12 @@
 import requests
-from functions import get_district
 from datetime import date, datetime
 import json
 import time
+from functions import get_district, get_phone
+from twilio_message import message
 
 district_code = get_district()
+phone_num = get_phone()
 
 date = date.today()
 date = str(date.strftime("%d/%m/%Y"))
@@ -29,10 +31,10 @@ def check_slots(data):
     return sessions
 
 
-def notify(sessions, notified):
+def notify(sessions, notified,rec):
     for i in sessions:
         if i not in notified:
-            print(i)
+            message(body=i,reciever=rec)
             notified.append(i)
 
 
@@ -48,8 +50,8 @@ notified = []
 while True:
     data = ping_setu(url, district_code, date)
     sessions = check_slots(data)
-    notify(sessions, notified)
+    notify(sessions, notified,phone_num)
     time_dif = (datetime.now()-last_cleared)
-    if time_dif.total_seconds() > 3600:
+    if time_dif.total_seconds() > 86400:
         notified, last_cleared = clear_noti(notified)
     time.sleep(10)
